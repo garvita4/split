@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a custom split keybaord with the 1.8inch tft diaply and rotatory encoder and also with rfid nfc based lock system with the controlable backlight . This keyboard can be used as wired keybaord as well as the wireless keybaord with the 2 bluetooth profile 
+This is a custom split keybaord with the 1.8inch tft display and rotatory encoder and also with rfid nfc based lock system with the controlable backlight . This keyboard can be used as wired keybaord as well as the wireless keybaord with the 2 bluetooth profile 
 
 ![Fully Assembled Keyboard](images/kbd-final.png)
 
@@ -10,12 +10,12 @@ This is a custom split keybaord with the 1.8inch tft diaply and rotatory encoder
 
 ##  Collaboration & Attribution (Team Project)
 
-This project was built in collaboration with my friend **Mr. Chronos** ([Chronos-03/Chronos-keybaord](https://github.com/Chronos-03/Chronos-keybaord)). Because I was learning several workflows from scratch, we worked together over live screen-sharing sessions. While our core architecture and design files look very similar due to building them side-by-side in real time, I created my own project files step-by-step alongside him and mutually debugged issues along the way.
+This project was built in collaboration with my friend **Mr. Chronos** ([Chronos-03/Chronos-keybaord](https://github.com/Chronos-03/Chronos-keybaord)).as I was learning several workflows from scratch, we worked together over meet sessions. our architecture and design files look very similar beause they were made side by side in real time. I created my own project files step-by-step alongside him and mutually debugged issues.
 
 ###  Breakdown of Contributions (What I Did vs. What Chronos Did)
 
 **What I Did Myself (Time Claimed):**
-Drew the complete schematic in KiCad myself while following along in real time, verifying component connections, and helping spot/fix schematic errors during our sessions.Placed the components, routed the PCB tracks on my board, and resolved the DRC/ERC errors with his mentorship. Built the 3D enclosure step-by-step while learning CAD modeling from him. I also independently modified and fine-tuned my case design by adding rounded corners (fillets) to give it a smoother, distinct aesthetic compared to his enclosure.
+Drew the complete schematic in KiCad myself while following along in real time, verifying component connections, and helping spot/fix schematic errors during our sessions.Placed the components, routed the PCB tracks on my board, and resolved the DRC/ERC errors with his help. Built the 3D case step-by-step while learning CAD modeling from him. I also independently modified and fine-tuned my case design by adding rounded corners (fillets) to give it a smoother, distinct aesthetic compared to his.
 
 **What Mr. Chronos Did (Time NOT Claimed):**
 Guided me through the schematic design, PCB routing rules, error resolution, and 3D CAD workflow via screen share.The PCB panelization / mouse bites and shared fabrication prep were done directly by Mr. Chronos. **I have not claimed any time for this part.**
@@ -25,37 +25,36 @@ Guided me through the schematic design, PCB routing rules, error resolution, and
 
 ### Split Mechanical Layout
 
-Two separate keyboard halves, each built around its own ESP32-S3 microcontroller and supporting electronics.
- Each side having 21 MX switches and with the backlight. 
+The keyboard is split into two separate halves, each powered by its own ESP32-S3 microcontroller and supporting components. Each half has 21 MX switches along with backlighting.
 ![Full Keyboard Layout](images/keyboard-layout.png)
 
 ### Rotary Encoder Controls
 
-EC11 rotary encoders provide physical controls for functions such as volume and brightness.
+EC11 rotary encoders helps in  easily adjusting settings like volume and screen brightness.
 
 ![Rotary Encoder Schematic](images/rotary-encoders.png)
 
 ### TFT Display
 
-Two 1.8-inch TFT displays are included for displaying system information such as battery percentage and connectivity status. Can also play animation on idle state.
+Two 1.8-inch TFT displays show information like battery level and connection status. They can also play animations when the keyboard is not in use.
 
 ![Display Schematic](images/display.png)
 
 ### RFID Integration
 
-RC522 readers provide the hardware for RFID card detection and card-based interactions used to unlock the keyboard or the PC depend on the firmware either use it as the keyboard lock or use it to open the pc via your nfc tag or the phone nfc 
+RC522 readers enable RFID-based interactions, allowing users to unlock the keyboard or even their PC. Depending on the firmware, either use it as the keyboard lock or use it to open the pc via your nfc tag or the phone nfc
 
 ![RFID Schematic](images/rfid.png)
 
 ### Rechargeable Power
 
-Each half has a rechargeable 10000 mah LiPo battery with the inbuilt BMS which power up the whole half and can provide long lasting backup on the bluetooth mode .
+Each half comes with a rechargeable 10,000 mAh LiPo battery and a built-in BMS to power all its components. this can provide long battery life when using Bluetooth mode.
 
 ![Power Management Schematic](images/power-management.png)
 
 ### Per-Key Backlighting
 
-White 0805 SMD LEDs are use to work as the backlight like professional keybaord with the intensity control uc an control the backlight intensity with the same rotatory encoder 
+White 0603 SMD LEDs are use to work as the backlight like any professional keybaord. its intensity can be controlled  with the same rotatory encoder.
 
 ![LED Schematic](images/resistors-leds.png)
 
@@ -65,54 +64,53 @@ White 0805 SMD LEDs are use to work as the backlight like professional keybaord 
 
 ### Key Switch Matrix
 
-The switch matrix connects the mechanical switches to the microcontroller. Diodes help prevent unwanted electrical paths during simultaneous key presses.
+The switch matrix connects the mechanical switches to the microcontroller. diodes prevent unwanted signals when multiple keys are pressed at the same time.
 
 ![Key Switch Matrix](images/key-matrix.png)
 
 ### Switches and Diodes
 
-Mechanical switches provide individual key inputs, while 1N4148WS diodes support switch-matrix isolation.
-
+Each mechanical switch registers an individual key press, while the 1N4148WS diodes help prevent unwanted signal interference when multiple keys are pressed together.
 
 ### Resistors and LEDs
 
-Resistors support the associated circuits, while white SMD LEDs provide per-key backlighting.
+Resistors support the circuits and help in its proper working, while white SMD LEDs provide backlighting for each key.
 
 ![Resistors and LEDs](images/resistors-leds.png)
 
 ### Microcontroller
 
-The ESP32-S3-WROOM-1-N4R8 acts as the main controller for each keyboard half.
+The ESP32-S3-WROOM-1-N4R8 acts as the main controller for each half.
 
 ![ESP32-S3 Schematic](images/esp32-s3.png)
 
 ### Rotary Encoders
 
-The EC11 encoders provide rotation and switch inputs for additional keyboard controls.
+The EC11 encoders can be pressed or rotated to access additional keyboard controls.
 
 ![Rotary Encoder Schematic](images/rotary-encoders.png)
 
 ### Display Circuit
 
-The display connections allow the ESP32-S3 to communicate with the TFT modules.
+These connections allow the ESP32-S3 to communicate with the TFT displays and show information on them.
 
 ![Display Schematic](images/display.png)
 
 ### RFID Circuit
 
-The RC522 reader connections provide the interface for RFID card detection.
+These connections allow the RC522 readers to detect and read RFID cards or NFC tags.
 
 ![RFID Schematic](images/rfid.png)
 
 ### Power Management
 
-The power circuit includes LiPo battery charging, 3.3 V regulation, MOSFET switching, and resettable overcurrent protection.
+The power circuit handles battery charging, regulates the voltage to 3.3 V, and includes MOSFET switching and resettable protection against excessive current.
 
 ![Power Management](images/power-management.png)
 
 ### USB-C Connectivity
 
-USB-C connectors provide the interfaces intended for charging, firmware uploading, and supported wired connections.
+The USB-C ports are used for charging, uploading firmware, and connecting the keyboard using a wired connection.
 
 ![USB-C Schematic](images/usb-c.png)
 
@@ -120,7 +118,7 @@ USB-C connectors provide the interfaces intended for charging, firmware uploadin
 
 ## PCB Design
 
-The custom schematic and PCB layout were designed in KiCad, with the boards manufactured by Zbotic. The PCB integrates the keyboard matrix, controller connections, peripheral interfaces, backlighting, and power circuitry.
+The schematic and PCB layout were designed in KiCad, and the boards are manufactured by Zbotic. The PCB brings everything together, including the keyboard matrix, controller, connected components, backlighting, and power circuits.
 
 ![PCB Layout](images/pcb-layout.png)
 
@@ -128,7 +126,7 @@ The custom schematic and PCB layout were designed in KiCad, with the boards manu
 
 ## CAD Design
 
-The keyboard enclosure is modelled in Fusion 360 to accommodate the custom PCB, switches, displays, rotary encoders, and internal electronics.
+The keyboard case was designed in Fusion 360 to fit all the components, including the custom PCB, switches, displays, rotary encoders, and other internal electronics.
 
 ### Enclosure
 
@@ -142,23 +140,22 @@ The keyboard enclosure is modelled in Fusion 360 to accommodate the custom PCB, 
 
 ## Firmware Status
 
-This firmware was written by me and ahead of physical hardware assembly and has not yet been tested on the actual PCB. Once the hardware build is complete, I will flash the boards, test all peripherals in real time, and fine-tune the code to ensure everything runs flawlessly. I make sure to update the firmware as soon as I  will done with the hardware and make the optimised firmware for this project.
+the. firmware is written before assembling the physical hardware, so it hasn't been tested on the actual PCB yet. Once the hardware is ready, I'll flash the boards, test all the peripherals, and make the necessary changes to improve performance. I'll also keep updating and optimising the firmware to make sure everything works smoothly with the final build.
 
 ---
 
 ## Display, Backlight, and NFC Features
 
-These are the additional features I added to this project:
-* **Display:** 1.8-inch SPI TFT display (shows live battery status, backlight percentage, active layer, and NFC UIDs)
-* **Backlight:** 0603 SMD LEDs (controlled via the rotary encoder with PWM dimming and wireless sync)
-* **NFC:** RC522 NFC Mini Module (connected via SPI for tag scanning)
+Some additional features that I added to this project:
+* **Display:** A 1.8-inch SPI TFT display that shows battery status, backlight brightness, the active layer, and NFC tag UIDs.
+* **Backlight:** 0603 SMD LEDs with PWM brightness control through the rotary encoder and wireless syncing.
+* **NFC:** An RC522 NFC module connected through SPI for scanning NFC tags.
 
-These features were extremely challenging to implement alongside the wireless split keyboard stack, but I worked hard to integrate them into the firmware. The firmware is currently in the testing phase—all proper on-board checks and final sanity testing will be completed once the physical hardware is assembled.
-
+These features were quite challenging to implement alongside the wireless split keyboard, but I worked hard to integrate them into the firmware. The firmware is ready for testing, but the actual on-board checks and final testing will be done once the physical hardware is assembled.
 
 
 ## AI Declaration
-I completed the hardware design, schematic capture, PCB layout, and 3D CAD modeling myself alongside guidance from **Mr. Chronos**. For the firmware, I wrote the complete C++ codebase myself and used AI strictly as a final sanity check to debug and verify the code before flashing.
+I completed the hardware design, schematic capture, PCB layout, and 3D CAD modeling myself alongside guidance from **Mr. Chronos**. For the firmware, I wrote the complete C++ codebase myself and used AI only for a final review, debugging, and checking the code before flashing.
 
 ## Bill of Materials (BOM)
 
@@ -175,7 +172,7 @@ The following table lists the components required to build the split mechanical 
 | Cherry MX2A Mechanical Switches | 42 | meckeys | $0.41 | $17.22 | [Buy](https://meckeys.com/shop/accessories/keyboard-accessories/key-switches/cherry-mx2a-switch/) |
 | 1N4148WS SMD Diodes (SOD-323) | 42 | surnom.com | $0.01 | $0.42 | [Buy](https://www.sunrom.com/p/1n4148---1n4148ws---t4---smd---sod323-0805) |
 | EC11 Rotary Encoder | 2 | robu.in | $0.61 | $1.22 | [Buy](https://robu.in/product/hongyan-ec11h-7ce15p1zd15f7-rotary-encoder-with-push-button-switch-vertical-plug-in-5-pin-360-degree/) |
-| 0805 SMD Backlight LEDs | 42 | ktron.in | $0.01 | $0.42 | [Buy](https://www.ktron.in/product/smd-white-led-0805-package/) |
+| 0603 SMD Backlight LEDs | 42 | ktron.in | $0.01 | $0.42 | [Buy](https://www.ktron.in/product/smd-white-led-0603-package/) |
 | AO3400A N-Channel MOSFET | 2 | robu.in | $0.06 | $0.12 | [Buy](https://robu.in/product/1-month-warranty-414/) |
 | SMD 16-pin connector | 4 | ktron.in | $0.06 | $0.24 | [Buy](https://www.ktron.in/product/16-pin-usb-type-c-connector-smd/) |
 | 10,000 mAh LiPo Battery | 2 | makerbazar.in | $4.23 | $8.46 | [Buy](https://makerbazar.in/products/single-cell-3-7v-10000mah-lipo-battery) |
