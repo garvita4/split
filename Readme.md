@@ -2,11 +2,11 @@
 
 ## Overview
 
-This is a custom split keybaord with the 1.8inch tft display and rotatory encoder and also with rfid nfc based lock system with the controlable backlight . This keyboard can be used as wired keybaord as well as the wireless keybaord with the 2 bluetooth profile 
+This is a custom split mechanical keyboard that I designed with two ESP32-S3 microcontrollers, one for each half. I added a few extra features different from a normal keyboard, including 1.8-inch TFT displays, rotary encoders, RFID/NFC-based locking, and adjustable per-key backlighting.
+This keyboard can be used as wired keybaord as well as the wireless keybaord with the 2 bluetooth profile 
 
 ![Fully Assembled Keyboard](images/kbd-final.png)
 
----
 
 ##  Collaboration & Attribution (Team Project)
 
@@ -20,12 +20,14 @@ Drew the complete schematic in KiCad myself while following along in real time, 
 **What Mr. Chronos Did (Time NOT Claimed):**
 Guided me through the schematic design, PCB routing rules, error resolution, and 3D CAD workflow via screen share.The PCB panelization / mouse bites and shared fabrication prep were done directly by Mr. Chronos. **I have not claimed any time for this part.**
 
+## Why did i make this
+I just wanted to make something cool which i myself yould love to use in a long run.And this idea came randomly, while discussing projects with my friend Mr. Chronos.We both liked the idea, so we decided to stick with it and gradually started adding more features to make it our own.
 
 ## Key Features
 
 ### Split Mechanical Layout
 
-The keyboard is split into two separate halves, each powered by its own ESP32-S3 microcontroller and supporting components. Each half has 21 MX switches along with backlighting.
+the keyboard is in two separate halves, with each half having its own ESP32-S3 microcontroller. Each side has 21 Cherry MX switches, giving the keyboard a total of 42 keys. I also included individual backlighting for the keys.
 ![Full Keyboard Layout](images/keyboard-layout.png)
 
 ### Rotary Encoder Controls
@@ -42,13 +44,13 @@ Two 1.8-inch TFT displays show information like battery level and connection sta
 
 ### RFID Integration
 
-RC522 readers enable RFID-based interactions, allowing users to unlock the keyboard or even their PC. Depending on the firmware, either use it as the keyboard lock or use it to open the pc via your nfc tag or the phone nfc
+integrated an RC522 RFID reader into each half. This allows the keyboard to read RFID cards and NFC tags. I also added the option to use this feature as a keyboard lock or to trigger PC unlocking through a supported NFC tag or phone.
 
 ![RFID Schematic](images/rfid.png)
 
 ### Rechargeable Power
 
-Each half comes with a rechargeable 10,000 mAh LiPo battery and a built-in BMS to power all its components. this can provide long battery life when using Bluetooth mode.
+Each half has a rechargeable 10,000 mAh LiPo battery and a built-in BMS to power all its components. this can provide long battery life when using Bluetooth mode.
 
 ![Power Management Schematic](images/power-management.png)
 
@@ -58,7 +60,6 @@ White 0603 SMD LEDs are use to work as the backlight like any professional keyba
 
 ![LED Schematic](images/resistors-leds.png)
 
----
 
 ## Schematic Design
 
@@ -92,19 +93,19 @@ The EC11 encoders can be pressed or rotated to access additional keyboard contro
 
 ### Display Circuit
 
-These connections allow the ESP32-S3 to communicate with the TFT displays and show information on them.
+The TFT displays are connected to the ESP32-S3 so they can show battery information, connection status, and other keyboard details.
 
 ![Display Schematic](images/display.png)
 
 ### RFID Circuit
 
-These connections allow the RC522 readers to detect and read RFID cards or NFC tags.
+The RC522 modules are connected to the ESP32-S3 to read RFID cards and NFC tags.
 
 ![RFID Schematic](images/rfid.png)
 
 ### Power Management
 
-The power circuit handles battery charging, regulates the voltage to 3.3 V, and includes MOSFET switching and resettable protection against excessive current.
+For the power section, TP4056 charging ICs, ME6211 voltage regulators and AO3400A MOSFETs are used. I also added resettable PTC protection.
 
 ![Power Management](images/power-management.png)
 
@@ -114,15 +115,13 @@ The USB-C ports are used for charging, uploading firmware, and connecting the ke
 
 ![USB-C Schematic](images/usb-c.png)
 
----
 
 ## PCB Design
 
-The schematic and PCB layout were designed in KiCad, and the boards are manufactured by Zbotic. The PCB brings everything together, including the keyboard matrix, controller, connected components, backlighting, and power circuits.
+The schematic and PCB layout were designed in KiCad, and the boards are manufactured by Zbotic. The PCB contains the keyboard matrix, controller connections, peripheral interfaces, LED backlighting, and power circuits.
 
 ![PCB Layout](images/pcb-layout.png)
 
----
 
 ## CAD Design
 
@@ -136,13 +135,11 @@ The keyboard case was designed in Fusion 360 to fit all the components, includin
 
 ![Complete CAD Assembly](images/cad-assembly.png)
 
----
 
 ## Firmware Status
 
-the. firmware is written before assembling the physical hardware, so it hasn't been tested on the actual PCB yet. Once the hardware is ready, I'll flash the boards, test all the peripherals, and make the necessary changes to improve performance. I'll also keep updating and optimising the firmware to make sure everything works smoothly with the final build.
+I wrote the firmware before the physical hardware was assembled, so I haven't been able to test it on the actual PCB yet. Once the boards are ready, I'll flash them and check each component individually. I'll make changes wherever needed and update the code based on how everything performs on the actual hardware.
 
----
 
 ## Display, Backlight, and NFC Features
 
@@ -151,17 +148,13 @@ Some additional features that I added to this project:
 * **Backlight:** 0603 SMD LEDs with PWM brightness control through the rotary encoder and wireless syncing.
 * **NFC:** An RC522 NFC module connected through SPI for scanning NFC tags.
 
-These features were quite challenging to implement alongside the wireless split keyboard, but I worked hard to integrate them into the firmware. The firmware is ready for testing, but the actual on-board checks and final testing will be done once the physical hardware is assembled.
+Getting the display, backlight, and NFC features working alongside the wireless keyboard took quite a bit of work. I had to make changes to the firmware to get everything working together. The firmware is ready for testing, but the actual on-board checks and final testing will be done once the physical hardware is assembled.
 
 
 ## AI Declaration
 I completed the hardware design, schematic capture, PCB layout, and 3D CAD modeling myself alongside guidance from **Mr. Chronos**. For the firmware, I wrote the complete C++ codebase myself and used AI only for a final review, debugging, and checking the code before flashing.
 
 ## Bill of Materials (BOM)
-
-The following table lists the components required to build the split mechanical keyboard, including specifications, quantities, estimated costs, and sourcing links.
-
-### Component Breakdown
 
 | Item | Qty | Supplier | Cost/item | Total Cost | Link |
 | :--- | :--- | :--- | :--- | :--- | :--- |
