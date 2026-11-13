@@ -438,7 +438,6 @@ static bool wasRemoteUp = false;
 
 static bool leftKnobVolumeMode = false;
 
-// Telemetry & UI state
 static uint8_t localBattPct = 100;
 static uint8_t remoteBattPct = 0;
 static uint32_t lastBattReadMs = 0;
@@ -453,7 +452,6 @@ static uint8_t getBacklightPercent() {
     return (uint8_t)((duty * 100) / 255);
 }
 
-// Adjust Backlight Brightness using Left Rotary Encoder
 static void adjustBrightnessSteps(int8_t steps) {
     if (!steps) return;
     markActive();
@@ -466,7 +464,6 @@ static void adjustBrightnessSteps(int8_t steps) {
     }
 }
 
-// Adjust System Volume using Right Rotary Encoder (or Left Knob when in Volume Mode)
 static void applyVolumeSteps(int8_t steps) {
     if (!steps) return;
     markActive();
@@ -529,12 +526,10 @@ static void updateOled(bool remoteUp) {
     display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);
 
-    // Line 1: BLE Status + Layer
     display.setCursor(0, 0);
     display.printf("BLE:%s   Lyr:%u", ble.isConnected() ? "ON " : "OFF", layerHolds > 0 ? 1 : 0);
     display.drawLine(0, 10, 127, 10, SSD1306_WHITE);
 
-    // Line 2: Left & Right Battery Status
     display.setCursor(0, 14);
     if (remoteUp) {
         display.printf("Bat L:%3u%%  R:%3u%%", localBattPct, remoteBattPct);
@@ -542,14 +537,12 @@ static void updateOled(bool remoteUp) {
         display.printf("Bat L:%3u%%  R:---%%", localBattPct);
     }
 
-    // Line 3: Backlight Percentage + Progress Bar
     uint8_t blPct = (millis() - lastActivityMs > BACKLIGHT_IDLE_MS) ? 0 : getBacklightPercent();
     display.setCursor(0, 26);
     display.printf("Backlight: %3u%%", blPct);
     display.drawRect(0, 36, 128, 6, SSD1306_WHITE);
     display.fillRect(2, 38, (blPct * 124) / 100, 2, SSD1306_WHITE);
 
-    // Line 4: Knob Mode & Last NFC Tag
     display.setCursor(0, 46);
     display.printf("L-Knob:%s R:VOL", leftKnobVolumeMode ? "VOL" : "BRT");
     display.setCursor(0, 56);
@@ -564,7 +557,6 @@ static void leftSetup() {
     battery::begin();
     localBattPct = battery::readPercent();
 
-    // Init I2C OLED
     Wire.begin(OLED_SDA_PIN, OLED_SCL_PIN);
     oledReady = display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
     if (oledReady) {
@@ -572,7 +564,6 @@ static void leftSetup() {
         display.display();
     }
 
-    // Init SPI RC522 NFC
     SPI.begin(RFID_SCK_PIN, RFID_MISO_PIN, RFID_MOSI_PIN, RFID_CS_PIN);
     rfid.PCD_Init();
 
@@ -587,7 +578,6 @@ static void leftTick() {
     encoder.update();
     pollNfc();
 
-    // Sample local battery every 5 seconds
     if (now - lastBattReadMs >= BATTERY_SAMPLE_MS) {
         localBattPct = battery::readPercent();
         lastBattReadMs = now;
@@ -599,10 +589,8 @@ static void leftTick() {
         ble.releaseAll();
     }
 
-    // Process Left Half Keys
     processKeys(0, matrix.state());
 
-    // Left Encoder Rotation: Controls Backlight Brightness (or Volume if toggled)
     int8_t leftSteps = (int8_t)(encoder.counter() - lastLocalEnc);
     lastLocalEnc = encoder.counter();
     if (leftSteps != 0) {
@@ -613,14 +601,12 @@ static void leftTick() {
         }
     }
 
-    // Left Encoder Button Click: Toggles Left Knob between Brightness and Volume mode
     if (encoder.button() && !lastLocalBtn) {
         leftKnobVolumeMode = !leftKnobVolumeMode;
         markActive();
     }
     lastLocalBtn = encoder.button();
 
-    // Process Right Half State via ESP-NOW
     RemoteState rs = {0, 0, false, 0};
     uint32_t age = 0;
     const bool remoteUp = splitGetRemote(rs, age) && age < REMOTE_TIMEOUT_MS;
@@ -637,12 +623,10 @@ static void leftTick() {
         }
         processKeys(1, rs.keys);
 
-        // Right Encoder Rotation: Controls Media Volume
         int8_t rightSteps = (int8_t)(rs.encCount - lastRemoteEnc);
         lastRemoteEnc = rs.encCount;
         applyVolumeSteps(rightSteps);
 
-        // Right Encoder Button Click: Mute / Unmute Audio
         if (rs.encButton && !lastRemoteBtn && ble.isConnected()) {
             ble.write(KEY_MEDIA_MUTE);
             markActive();
@@ -653,7 +637,6 @@ static void leftTick() {
         processKeys(1, 0);
     }
 
-    // Update Local & Remote Backlight PWM
     const uint8_t duty = (now - lastActivityMs > BACKLIGHT_IDLE_MS) ? 0 : BACKLIGHT_LEVELS[brightnessLevel];
     if (duty != currentDuty) {
         currentDuty = duty;
@@ -666,15 +649,13 @@ static void leftTick() {
         lastBacklightSendMs = now;
     }
 
-    // Refresh OLED Display at 5 Hz
     if (now - lastDisplayUpdateMs >= DISPLAY_UPDATE_MS) {
         updateOled(remoteUp);
         lastDisplayUpdateMs = now;
     }
 }
-#endif // SIDE_LEFT
+#endif 
 
-// ==================== SLAVE (RIGHT HALF) LOGIC ====================
 #ifdef SIDE_RIGHT
 static uint32_t lastKeys = 0xFFFFFFFFu;
 static uint8_t lastEnc = 0;
@@ -718,9 +699,8 @@ static void rightTick() {
         backlight::setDuty(duty);
     }
 }
-#endif // SIDE_RIGHT
+#endif
 
-// ==================== ARDUINO ENTRY POINTS ====================
 void setup() {
     Serial.begin(115200);
     matrix.begin();
