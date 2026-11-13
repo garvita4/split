@@ -1,8 +1,7 @@
 #include <Arduino.h>
-#include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include <Adafruit_ST7735.h>
 #include <MFRC522.h>
 #include <Preferences.h>
 #include <WiFi.h>
@@ -34,19 +33,23 @@ constexpr uint8_t BACKLIGHT_NUM_LEVELS = sizeof(BACKLIGHT_LEVELS);
 constexpr uint8_t BACKLIGHT_DEFAULT_LEVEL = 2;
 constexpr uint32_t BACKLIGHT_IDLE_MS = 60UL * 1000UL;
 
+.
+constexpr bool HAVE_BATT_SENSE = false;
 constexpr uint8_t BATT_ADC_PIN = 1;
 constexpr float BATT_DIVIDER_RATIO = 2.0f;
+constexpr uint8_t SPI_SCK_PIN  = 40;
+constexpr uint8_t SPI_MOSI_PIN = 41;
+constexpr uint8_t SPI_MISO_PIN = 42;
 
-constexpr uint8_t OLED_SDA_PIN = 8;
-constexpr uint8_t OLED_SCL_PIN = 9;
-constexpr uint8_t SCREEN_WIDTH = 128;
-constexpr uint8_t SCREEN_HEIGHT = 64;
+constexpr uint8_t TFT_CS_PIN  = 37;  
+constexpr uint8_t TFT_DC_PIN  = 8;  
+constexpr uint8_t TFT_RST_PIN = 9;    
+constexpr uint8_t TFT_BL_PIN  = 36; 
 
-constexpr uint8_t RFID_SCK_PIN  = 36;
-constexpr uint8_t RFID_MISO_PIN = 37;
-constexpr uint8_t RFID_MOSI_PIN = 35;
-constexpr uint8_t RFID_CS_PIN   = 39;
-constexpr uint8_t RFID_RST_PIN  = 40;
+
+constexpr uint8_t RFID_CS_PIN  = 39; 
+constexpr uint8_t RFID_RST_PIN = 14; 
+
 
 constexpr uint32_t DEBOUNCE_MS = 5;
 constexpr uint32_t HEARTBEAT_MS = 50;
@@ -54,6 +57,7 @@ constexpr uint32_t REMOTE_TIMEOUT_MS = 250;
 constexpr uint32_t BACKLIGHT_SYNC_MS = 500;
 constexpr uint32_t DISPLAY_UPDATE_MS = 200;
 constexpr uint32_t BATTERY_SAMPLE_MS = 5000;
+constexpr uint32_t NFC_POLL_MS = 150;
 constexpr uint8_t SPLIT_WIFI_CHANNEL = 1;
 
 #ifdef SIDE_LEFT
@@ -191,15 +195,17 @@ inline bool decodeBacklight(const uint8_t* data, int len, BacklightPacket& out) 
 }
 
 inline bool seqNewer(uint8_t seq, uint8_t last) { return (int8_t)(seq - last) > 0; }
-} 
+}  
 
 namespace battery {
 void begin() {
+    if (!HAVE_BATT_SENSE) return;
     pinMode(BATT_ADC_PIN, INPUT);
     analogReadResolution(12);
 }
 
 uint8_t readPercent() {
+    if (!HAVE_BATT_SENSE) return 0;
     uint32_t mv = analogReadMilliVolts(BATT_ADC_PIN);
     float vBat = (mv / 1000.0f) * BATT_DIVIDER_RATIO;
     if (vBat >= 4.15f) return 100;
@@ -297,6 +303,7 @@ private:
     uint32_t lastChangeMs_[NUM_KEYS] = {0};
 };
 
+
 namespace backlight {
 constexpr uint8_t LEDC_CHANNEL = 0;
 constexpr uint32_t PWM_FREQ_HZ = 20000;
@@ -308,7 +315,8 @@ void begin() {
     ledcWrite(LEDC_CHANNEL, 0);
 }
 void setDuty(uint8_t duty) { ledcWrite(LEDC_CHANNEL, duty); }
-} 
+}  
+
 
 struct RemoteState {
     uint32_t keys;
@@ -360,7 +368,7 @@ void onRecv(const uint8_t *mac, const uint8_t *data, int len) {
     portEXIT_CRITICAL(&g_mux);
 #endif
 }
-}
+} 
 
 bool splitBegin() {
     WiFi.mode(WIFI_STA);
@@ -414,9 +422,9 @@ static Matrix matrix;
 static Encoder encoder;
 
 #ifdef SIDE_LEFT
-static BleKeyboard ble("ChronosSplit", "Chronos", 100);
+static BleKeyboard ble("GarvitaSplit", "Garvita", 100);
 static Preferences prefs;
-static Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+static Adafruit_ST7735 tft(&SPI, TFT_CS_PIN, TFT_DC_PIN, TFT_RST_PIN);
 static MFRC522 rfid(RFID_CS_PIN, RFID_RST_PIN);
 
 static uint16_t pressedCode[2][NUM_KEYS];
@@ -442,7 +450,8 @@ static uint8_t localBattPct = 100;
 static uint8_t remoteBattPct = 0;
 static uint32_t lastBattReadMs = 0;
 static uint32_t lastDisplayUpdateMs = 0;
-static bool oledReady = false;
+static uint32_t lastNfcPollMs = 0;
+static bool tftReady = false;
 static char lastNfcUid[16] = "None";
 
 static void markActive() { lastActivityMs = millis(); }
@@ -510,7 +519,9 @@ static void processKeys(uint8_t side, uint32_t now) {
     prevKeys[side] = now;
 }
 
-static void pollNfc() {
+static void pollNfc(uint32_t now) {
+    if (now - lastNfcPollMs < NFC_POLL_MS) return;  
+    lastNfcPollMs = now;
     if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) return;
     markActive();
     snprintf(lastNfcUid, sizeof(lastNfcUid), "%02X:%02X:%02X:%02X",
@@ -520,35 +531,40 @@ static void pollNfc() {
     rfid.PCD_StopCrypto1();
 }
 
-static void updateOled(bool remoteUp) {
-    if (!oledReady) return;
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(SSD1306_WHITE);
+static void tftRow(int16_t y, uint16_t color, const char* s) {
+    char buf[27];
+    snprintf(buf, sizeof(buf), "%-26s", s);  
+    tft.setTextColor(color, ST77XX_BLACK);
+    tft.setCursor(0, y);
+    tft.print(buf);
+}
 
-    display.setCursor(0, 0);
-    display.printf("BLE:%s   Lyr:%u", ble.isConnected() ? "ON " : "OFF", layerHolds > 0 ? 1 : 0);
-    display.drawLine(0, 10, 127, 10, SSD1306_WHITE);
+static void updateTft(bool remoteUp) {
+    if (!tftReady) return;
+    char b[32];
 
-    display.setCursor(0, 14);
-    if (remoteUp) {
-        display.printf("Bat L:%3u%%  R:%3u%%", localBattPct, remoteBattPct);
-    } else {
-        display.printf("Bat L:%3u%%  R:---%%", localBattPct);
-    }
+    snprintf(b, sizeof(b), "BLE:%s  Layer:%u", ble.isConnected() ? "ON" : "OFF", layerHolds > 0 ? 1 : 0);
+    tftRow(2, ST77XX_CYAN, b);
 
-    uint8_t blPct = (millis() - lastActivityMs > BACKLIGHT_IDLE_MS) ? 0 : getBacklightPercent();
-    display.setCursor(0, 26);
-    display.printf("Backlight: %3u%%", blPct);
-    display.drawRect(0, 36, 128, 6, SSD1306_WHITE);
-    display.fillRect(2, 38, (blPct * 124) / 100, 2, SSD1306_WHITE);
+    if (!HAVE_BATT_SENSE)  snprintf(b, sizeof(b), "Battery: n/a");
+    else if (remoteUp)     snprintf(b, sizeof(b), "Bat L:%3u%%  R:%3u%%", localBattPct, remoteBattPct);
+    else                   snprintf(b, sizeof(b), "Bat L:%3u%%  R:---%%", localBattPct);
+    tftRow(18, ST77XX_WHITE, b);
 
-    display.setCursor(0, 46);
-    display.printf("L-Knob:%s R:VOL", leftKnobVolumeMode ? "VOL" : "BRT");
-    display.setCursor(0, 56);
-    display.printf("NFC: %s", lastNfcUid);
+    const uint8_t blPct = (millis() - lastActivityMs > BACKLIGHT_IDLE_MS) ? 0 : getBacklightPercent();
+    snprintf(b, sizeof(b), "Backlight: %3u%%", blPct);
+    tftRow(34, ST77XX_YELLOW, b);
 
-    display.display();
+    const int16_t barW = tft.width() - 4;
+    const int16_t fillW = (blPct * barW) / 100;
+    tft.fillRect(2, 48, fillW, 4, ST77XX_GREEN);
+    tft.fillRect(2 + fillW, 48, barW - fillW, 4, ST77XX_BLACK);
+
+    snprintf(b, sizeof(b), "L-Knob:%s  R:VOL", leftKnobVolumeMode ? "VOL" : "BRT");
+    tftRow(62, ST77XX_WHITE, b);
+
+    snprintf(b, sizeof(b), "NFC: %s", lastNfcUid);
+    tftRow(78, ST77XX_MAGENTA, b);
 }
 
 static void leftSetup() {
@@ -557,14 +573,22 @@ static void leftSetup() {
     battery::begin();
     localBattPct = battery::readPercent();
 
-    Wire.begin(OLED_SDA_PIN, OLED_SCL_PIN);
-    oledReady = display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-    if (oledReady) {
-        display.clearDisplay();
-        display.display();
-    }
+   
+    pinMode(TFT_CS_PIN, OUTPUT);   digitalWrite(TFT_CS_PIN, HIGH);
+    pinMode(RFID_CS_PIN, OUTPUT);  digitalWrite(RFID_CS_PIN, HIGH);
 
-    SPI.begin(RFID_SCK_PIN, RFID_MISO_PIN, RFID_MOSI_PIN, RFID_CS_PIN);
+    SPI.begin(SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN, -1);
+
+    pinMode(TFT_BL_PIN, OUTPUT);
+    digitalWrite(TFT_BL_PIN, HIGH);         
+    tft.initR(INITR_BLACKTAB);              
+    tft.setRotation(1);                     
+    tft.fillScreen(ST77XX_BLACK);
+    tft.setTextSize(1);
+    tft.setTextWrap(false);
+    tft.drawRect(0, 46, tft.width(), 8, ST77XX_WHITE); 
+    tftReady = true;
+
     rfid.PCD_Init();
 
     ble.begin();
@@ -576,7 +600,7 @@ static void leftTick() {
     const uint32_t now = millis();
     matrix.scan();
     encoder.update();
-    pollNfc();
+    pollNfc(now);
 
     if (now - lastBattReadMs >= BATTERY_SAMPLE_MS) {
         localBattPct = battery::readPercent();
@@ -594,11 +618,8 @@ static void leftTick() {
     int8_t leftSteps = (int8_t)(encoder.counter() - lastLocalEnc);
     lastLocalEnc = encoder.counter();
     if (leftSteps != 0) {
-        if (leftKnobVolumeMode) {
-            applyVolumeSteps(leftSteps);
-        } else {
-            adjustBrightnessSteps(leftSteps);
-        }
+        if (leftKnobVolumeMode) applyVolumeSteps(leftSteps);
+        else adjustBrightnessSteps(leftSteps);
     }
 
     if (encoder.button() && !lastLocalBtn) {
@@ -610,9 +631,7 @@ static void leftTick() {
     RemoteState rs = {0, 0, false, 0};
     uint32_t age = 0;
     const bool remoteUp = splitGetRemote(rs, age) && age < REMOTE_TIMEOUT_MS;
-    if (remoteUp != wasRemoteUp) {
-        wasRemoteUp = remoteUp;
-    }
+    if (remoteUp != wasRemoteUp) wasRemoteUp = remoteUp;
 
     if (remoteUp) {
         remoteBattPct = rs.battPct;
@@ -641,7 +660,7 @@ static void leftTick() {
     if (duty != currentDuty) {
         currentDuty = duty;
         backlight::setDuty(duty);
-        ble.setBatteryLevel(localBattPct);
+        if (HAVE_BATT_SENSE) ble.setBatteryLevel(localBattPct);
     }
     if (duty != lastSentDuty || now - lastBacklightSendMs >= BACKLIGHT_SYNC_MS) {
         splitSendBacklight(duty);
@@ -650,11 +669,11 @@ static void leftTick() {
     }
 
     if (now - lastDisplayUpdateMs >= DISPLAY_UPDATE_MS) {
-        updateOled(remoteUp);
+        updateTft(remoteUp);
         lastDisplayUpdateMs = now;
     }
 }
-#endif 
+#endif  
 
 #ifdef SIDE_RIGHT
 static uint32_t lastKeys = 0xFFFFFFFFu;
@@ -699,7 +718,7 @@ static void rightTick() {
         backlight::setDuty(duty);
     }
 }
-#endif
+#endif 
 
 void setup() {
     Serial.begin(115200);

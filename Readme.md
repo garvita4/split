@@ -11,6 +11,7 @@ This keyboard can be used as wired keybaord as well as the wireless keybaord wit
 ##  Collaboration & Attribution (Team Project)
 
 This project was built in collaboration with my friend **Mr. Chronos** ([Chronos-03/Chronos-keybaord](https://github.com/Chronos-03/Chronos-keybaord)).as I was learning several workflows from scratch, we worked together over meet sessions. our architecture and design files look very similar beause they were made side by side in real time. I created my own project files step-by-step alongside him and mutually debugged issues.
+you'll see that my readme and pcb are exactly same as Mr. Chronos, so i wanna clarify that my schematic was made by me only and it looks same bcz we did it side by side together on our own projects, and about the pcb, we both made our own first(as recorded in lapse) but i chose his pcb as the final one as it was better for manufacturing....but i hope we get the time recorded on the lapse for that.
 
 ###  Breakdown of Contributions (What I Did vs. What Chronos Did)
 
@@ -140,6 +141,7 @@ The keyboard case was designed in Fusion 360 to fit all the components, includin
 
 I wrote the firmware before the physical hardware was assembled, so I haven't been able to test it on the actual PCB yet. Once the boards are ready, I'll flash them and check each component individually. I'll make changes wherever needed and update the code based on how everything performs on the actual hardware.
 
+**AI disclosure** : as zmk and qmk have their own limitations, so that's why I took help from AI to make custom firmware which can run all the components flawlessly, like display, encoder, RFID, and backlight. 
 
 ## Display, Backlight, and NFC Features
 
