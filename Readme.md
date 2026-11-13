@@ -10,8 +10,8 @@ This keyboard can be used as wired keybaord as well as the wireless keybaord wit
 
 ##  Collaboration & Attribution (Team Project)
 
-This project was built in collaboration with my friend **Mr. Chronos** ([Chronos-03/Chronos-keybaord](https://github.com/Chronos-03/Chronos-keybaord)).as I was learning several workflows from scratch, we worked together over meet sessions. our architecture and design files look very similar beause they were made side by side in real time. I created my own project files step-by-step alongside him and mutually debugged issues.
-you'll see that my readme and pcb are exactly same as Mr. Chronos, so i wanna clarify that my schematic was made by me only and it looks same bcz we did it side by side together on our own projects, and about the pcb, we both made our own first(as recorded in lapse) but i chose his pcb as the final one as it was better for manufacturing....but i hope we get the time recorded on the lapse for that.
+This project was built in collaboration with my friend **Mr. Chronos** ([Chronos-03/Chronos-keybaord](https://github.com/Chronos-03/Chronos-keybaord)).as I was learning several things from scratch, we worked together over meet sessions. our files look very similar beause they were made side by side in real time. I created my own project files step-by-step alongside him and mutually debugged issues.
+you'll see that my schematics and pcb are exactly same as Mr. Chronos, so i wanna clarify that my schematic was made by me only and it looks same bcz we did it side by side together on our own projects, and about the pcb, we both made our own first(as recorded in lapse) but i chose his pcb as the final one as it was better for manufacturing....but i hope we get the time recorded on the lapse for that.
 
 ###  Breakdown of Contributions (What I Did vs. What Chronos Did)
 
