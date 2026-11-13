@@ -141,7 +141,11 @@ The keyboard case was designed in Fusion 360 to fit all the components, includin
 
 I wrote the firmware before the physical hardware was assembled, so I haven't been able to test it on the actual PCB yet. Once the boards are ready, I'll flash them and check each component individually. I'll make changes wherever needed and update the code based on how everything performs on the actual hardware.
 
-**AI disclosure** : as zmk and qmk have their own limitations, so that's why I took help from AI to make custom firmware which can run all the components flawlessly, like display, encoder, RFID, and backlight. 
+**AI Disclosure:** AI tools were used as an aid only during firmware development. I initially considered existing keyboard firmware frameworks like QMK and ZMK, but their hardware support and existing implementations didn't directly fit all the requirements of this project. QMK has limited built-in Bluetooth support, while ZMK's tested hardware support does not directly cover my ESP32-S3 setup, and its display support is still under development. Integrating all the additional features, including the TFT displays, rotary encoders, RFID/NFC modules, and individually controlled backlighting, would therefore require additional customization.
+
+I decided to develop custom firmware using C++ with ESP-IDF and FreeRTOS, taking AI assistance for writing parts of the code, implementing features, debugging, and refining the logic. **AI assistance was limited to the firmware side of the project.** The hardware design, schematic capture, PCB layout, and 3D CAD modeling were done separately by me, alongside guidance from Mr. Chronos.
+
+Once the physical hardware is assembled and the initial testing is complete, I'll work on optimizing the firmware, fixing any hardware-related issues, and updating the code and documentation as soon as possible.
 
 ## Display, Backlight, and NFC Features
 
@@ -152,9 +156,6 @@ Some additional features that I added to this project:
 
 Getting the display, backlight, and NFC features working alongside the wireless keyboard took quite a bit of work. I had to make changes to the firmware to get everything working together. The firmware is ready for testing, but the actual on-board checks and final testing will be done once the physical hardware is assembled.
 
-
-## AI Declaration
-I completed the hardware design, schematic capture, PCB layout, and 3D CAD modeling myself alongside guidance from **Mr. Chronos**. For the firmware, I wrote the complete C++ codebase myself and used AI only for a final review, debugging, and checking the code before flashing.
 
 ## Bill of Materials (BOM)
 
